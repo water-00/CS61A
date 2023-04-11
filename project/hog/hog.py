@@ -23,6 +23,16 @@ def roll_dice(num_rolls, dice=six_sided):
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    sum = 0
+    pig_out = False
+    for i in range(1, num_rolls + 1):
+        value = dice()
+        if (value == 1):
+            pig_out = True
+        else:
+            sum += value
+        
+    return sum if not pig_out else 1 
     # END PROBLEM 1
 
 
@@ -37,6 +47,8 @@ def free_bacon(score):
     # Trim pi to only (score + 1) digit(s)
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    pi //= pow(10, 100 - score)
+    
     # END PROBLEM 2
 
     return pi % 10 + 3
@@ -57,6 +69,7 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert opponent_score < 100, 'The game should be over.'
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    return roll_dice(num_rolls, dice) if num_rolls != 0 else free_bacon(opponent_score)
     # END PROBLEM 3
 
 
@@ -79,6 +92,11 @@ def swine_align(player_score, opponent_score):
     """
     # BEGIN PROBLEM 4a
     "*** YOUR CODE HERE ***"
+    if (player_score == 0 or opponent_score == 0):
+        return False
+    
+    gcd = max([i for i in range(1, min(player_score, opponent_score) + 1) if player_score % i == 0 and opponent_score % i == 0])
+    return True if gcd >= 10 else False
     # END PROBLEM 4a
 
 
@@ -101,6 +119,7 @@ def pig_pass(player_score, opponent_score):
     """
     # BEGIN PROBLEM 4b
     "*** YOUR CODE HERE ***"
+    return 0 < (opponent_score - player_score) < 3
     # END PROBLEM 4b
 
 
@@ -138,13 +157,29 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     say:        The commentary function to call at the end of the first turn.
     """
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
+    h0 = say
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    # 原来这个B函数不是返回一轮的结果，而是一直玩直到有人赢，返回赢时的结果
+    while (score0 < goal and score1 < goal):
+        if (who == 0):
+            num_rolls = strategy0(score0, score1)
+            score0 += take_turn(num_rolls, score1, dice)
+            if (not extra_turn(score0, score1)):
+                who = other(who)
+        else:
+            num_rolls = strategy1(score1, score0)
+            score1 += take_turn(num_rolls, score0, dice)
+            if (not extra_turn(score1, score0)):
+                who = other(who)
     # END PROBLEM 5
+    
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
+        "*** YOUR CODE HERE ***"
+        h0 = h0(score0, score1)
     # END PROBLEM 6
+    
     return score0, score1
 
 
@@ -192,7 +227,7 @@ def both(f, g):
     an example for the sake of the doctest
 
     >>> h0 = both(say_scores, announce_lead_changes())
-    >>> h1 = h0(10, 0)
+    >>> h1 = h0(10, 0) # h0就是say
     Player 0 now has 10 and Player 1 now has 0
     Player 0 takes the lead by 10
     >>> h2 = h1(10, 8)
@@ -212,7 +247,10 @@ def announce_highest(who, last_score=0, running_high=0):
 
     NOTE: the following game is not possible under the rules, it's just
     an example for the sake of the doctest
-
+    
+    last_score: 这轮前的积分
+    running_high: 最高新增得分
+    
     >>> f0 = announce_highest(1) # Only announce Player 1 score gains
     >>> f1 = f0(12, 0)
     >>> f2 = f1(12, 9)
@@ -228,6 +266,12 @@ def announce_highest(who, last_score=0, running_high=0):
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    def say(score0, score1):
+        increase = (score0 - last_score) if who == 0 else (score1 - last_score)
+        if increase > running_high:
+            print(increase, 'point(s)! The most yet for Player', who)
+        return announce_highest(who, score0 if who == 0 else score1, max(running_high, increase))
+    return say
     # END PROBLEM 7
 
 
@@ -260,7 +304,7 @@ def make_averaged(original_function, trials_count=1000):
 
     To implement this function, you will have to use *args syntax, a new Python
     feature introduced in this project.  See the project description.
-
+        
     >>> dice = make_test_dice(4, 2, 5, 1)
     >>> averaged_dice = make_averaged(dice, 1000)
     >>> averaged_dice()
@@ -268,6 +312,13 @@ def make_averaged(original_function, trials_count=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    # 这里之所以需要定义一个f(*args)，是用于接收original_function的参数
+    def f(*args):
+        result = 0
+        for i in range(0, trials_count):
+            result += original_function(*args)
+        return result / trials_count
+    return f
     # END PROBLEM 8
 
 
@@ -282,6 +333,14 @@ def max_scoring_num_rolls(dice=six_sided, trials_count=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    averaged_roll_dice = make_averaged(roll_dice, trials_count) # 把roll_dice传进去
+    max_avg = 0; max_idx = 1
+    for i in range(1, 11):
+        avg = averaged_roll_dice(i, dice) # 调用roll_dice(roll_nums, dice)1000次并求平均
+        if avg > max_avg:
+            max_avg = avg
+            max_idx = i
+    return max_idx
     # END PROBLEM 9
 
 
@@ -310,16 +369,16 @@ def run_experiments():
         six_sided_max = max_scoring_num_rolls(six_sided)
         print('Max scoring num rolls for six-sided dice:', six_sided_max)
 
-    if False:  # Change to True to test always_roll(8)
-        print('always_roll(8) win rate:', average_win_rate(always_roll(8)))
+    if True:  # Change to True to test always_roll(8)
+        print('always_roll(5) win rate:', average_win_rate(always_roll(5)))
 
-    if False:  # Change to True to test bacon_strategy
+    if True:  # Change to True to test bacon_strategy
         print('bacon_strategy win rate:', average_win_rate(bacon_strategy))
 
-    if False:  # Change to True to test extra_turn_strategy
+    if True:  # Change to True to test extra_turn_strategy
         print('extra_turn_strategy win rate:', average_win_rate(extra_turn_strategy))
 
-    if False:  # Change to True to test final_strategy
+    if True:  # Change to True to test final_strategy
         print('final_strategy win rate:', average_win_rate(final_strategy))
 
     "*** You may add additional experiments as you wish ***"
@@ -331,7 +390,7 @@ def bacon_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 6  # Replace this statement
+    return 0 if (free_bacon(opponent_score) >= cutoff) else num_rolls
     # END PROBLEM 10
 
 
@@ -341,7 +400,8 @@ def extra_turn_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     Otherwise, it rolls NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    return 6  # Replace this statement
+    bacon = free_bacon(opponent_score)
+    return 0 if extra_turn((score + bacon), opponent_score) or bacon >= cutoff else num_rolls
     # END PROBLEM 11
 
 
