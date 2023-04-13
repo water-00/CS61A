@@ -15,7 +15,8 @@ def lambda_curry2(func):
     3
     """
     "*** YOUR CODE HERE ***"
-    return ______
+    
+    return lambda x: lambda y: func(x, y)
 
 
 
@@ -47,9 +48,15 @@ def count_cond(condition):
     8
     """
     "*** YOUR CODE HERE ***"
+    def func(N):
+        result = 0
+        for i in range(1, N + 1):
+            if condition(N, i):
+                result += 1
+        return result
+    return func
 
-
-
+# 复合函数
 def compose1(f, g):
     """Return the composition function which given x, computes f(g(x)).
 
@@ -65,7 +72,7 @@ def compose1(f, g):
     >>> a2(5)
     108
     """
-    return lambda x: f(g(x))
+    return lambda x: f(g(x)) # f和g也可以是复合函数
 
 def composite_identity(f, g):
     """
@@ -82,7 +89,9 @@ def composite_identity(f, g):
     False
     """
     "*** YOUR CODE HERE ***"
-
+    def tell(x):
+        return compose1(f, g)(x) == compose1(g, f)(x)
+    return tell
 
 
 def cycle(f1, f2, f3):
@@ -112,4 +121,22 @@ def cycle(f1, f2, f3):
     19
     """
     "*** YOUR CODE HERE ***"
-
+    def time(n):
+        def calc(x):
+            i, result, start = 1, 0, False
+            if n == 0:
+                result = x
+            
+            while(i <= n):
+                if (i % 3 == 1):
+                    result = f1(result if start else x)
+                elif (i % 3 == 2):
+                    result = f2(result if start else x)
+                else:
+                    result = f3(result if start else x)
+                start = True
+                i += 1    
+            
+            return result
+        return calc
+    return time
