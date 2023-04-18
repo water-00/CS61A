@@ -1,19 +1,15 @@
 test = {
-  'name': 'Python Basics',
+  'name': 'List Indexing',
   'points': 0,
   'suites': [
     {
       'cases': [
         {
           'code': r"""
-          >>> 10 + 2
-          12
-          >>> 7 / 2
-          3.5
-          >>> 7 // 2
-          3
-          >>> 7 % 2			# 7 modulo 2, the remainder when dividing 7 by 2.
-          1
+          >>> x = [1, 3, [5, 7], 9] # Write the expression that indexes into x to output the 7
+          x[2][1]
+          >>> x = [[3, [5, 7], 9]] # Write the expression that indexes into x to output the 7
+          x[0][1][1]
           """,
           'hidden': False,
           'locked': False
@@ -26,18 +22,11 @@ test = {
       'cases': [
         {
           'code': r"""
-          >>> x = 20
-          >>> x + 2
-          22
-          >>> x
-          20
-          >>> y = 5
-          >>> y = y + 3
-          >>> y * 2
-          16
-          >>> y = y // 4
-          >>> y + x
-          22
+          >>> lst = [3, 2, 7, [84, 83, 82]]
+          >>> lst[4]
+          Error
+          >>> lst[3][0]
+          84
           """,
           'hidden': False,
           'locked': False
